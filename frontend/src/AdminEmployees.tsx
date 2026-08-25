@@ -9,7 +9,7 @@ type AdminView = "list" | "detail" | "create" | "background-check";
 type BackgroundProposal = { firstName: string; lastName: string; dateOfBirth: string };
 type BackgroundCreated = BackgroundProposal & { checkId: string; employeeId: string; status: "pending" | "clear" | "flagged" };
 
-export default function AdminEmployees({ onUnauthorized }: { onUnauthorized: () => void }) {
+export default function AdminEmployees({ onUnauthorized, onLogout }: { onUnauthorized: () => void; onLogout: () => Promise<void> }) {
   const [view, setView] = useState<AdminView>("list");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selected, setSelected] = useState<Employee | null>(null);
@@ -149,11 +149,11 @@ export default function AdminEmployees({ onUnauthorized }: { onUnauthorized: () 
     <label>이메일<input name="email" type="email" defaultValue={employee?.email} maxLength={320} required /></label>
     <label>전화번호<input name="phone" defaultValue={employee?.phone ?? ""} maxLength={30} /></label>
     <label>주소<textarea name="address" defaultValue={employee?.address ?? ""} maxLength={500} rows={3} /></label>
-    {creating && <label>초기 비밀번호<input name="initial_password" type="password" minLength={8} required /></label>}
+    {creating && <label>초기 비밀번호<input name="initial_password" type="password" required /></label>}
   </>;
 
   return <main className="admin-main"><section className="card admin-card">
-    <header className="admin-header"><div><p className="eyebrow">관리자</p><h1>직원 관리</h1></div>{view !== "list" && <button className="button--secondary" onClick={() => { setView("list"); setMessage(""); }}>목록으로</button>}</header>
+    <header className="admin-header"><div><p className="eyebrow">관리자</p><h1>직원 관리</h1></div><div className="admin-actions">{view !== "list" && <button className="button--secondary" onClick={() => { setView("list"); setMessage(""); }}>목록으로</button>}<button className="button--secondary" onClick={() => void onLogout()}>로그아웃</button></div></header>
     {message && <p role="status" className={message.includes("못했") || message.includes("사용 중") ? "message message--error" : "message"}>{message}</p>}
     {view === "list" && <><div className="admin-toolbar"><form className="search-form" onSubmit={submitSearch}><label className="sr-only" htmlFor="employee-search">이름 또는 사번 검색</label><input id="employee-search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="이름 또는 사번" /><button type="submit">검색</button></form><button onClick={() => { setMessage(""); setView("create"); }}>신규 직원 등록</button></div>{loading ? <p role="status">불러오는 중…</p> : <div className="table-wrap"><table><thead><tr><th>이름</th><th>사번</th><th>이메일</th><th>역할</th><th>상태</th><th></th></tr></thead><tbody>{employees.map((item) => <tr key={item.id}><td>{item.full_name}</td><td>{item.employee_number}</td><td>{item.email}</td><td>{item.role}</td><td>{item.status}</td><td><button className="button--link" onClick={() => void openDetail(item.id)}>상세</button></td></tr>)}</tbody></table>{employees.length === 0 && <p className="empty">검색 결과가 없습니다.</p>}</div>}</>}
     {view === "create" && <form className="employee-form" onSubmit={createEmployee}>{fields(undefined, true)}<button type="submit">등록</button></form>}

@@ -56,12 +56,26 @@ function App() {
     finally { setSaving(false); }
   };
 
+  const logout = async () => {
+    setMessage("");
+    try {
+      const response = await api("/auth/logout", {
+        method: "POST",
+        headers: { "X-CSRF-Token": csrfCookie() },
+      });
+      if (response.ok || response.status === 401) { showLogin(); return; }
+      throw new Error();
+    } catch {
+      setMessage("로그아웃 요청을 처리하지 못했습니다.");
+    }
+  };
+
   if (view === "loading") return <main><p role="status">로그인 상태를 확인하고 있습니다.</p></main>;
   if (view === "login") return <main><section className="card login-card"><p className="eyebrow">Employee Portal</p><h1>로그인</h1><form onSubmit={login}><label>이메일<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label>비밀번호<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>{message && <p role="alert" className="message message--error">{message}</p>}<button type="submit">로그인</button></form></section></main>;
-  if (view === "admin") return <AdminEmployees onUnauthorized={() => showLogin("관리자 세션이 만료되었거나 접근 권한이 없습니다.")} />;
+  if (view === "admin") return <AdminEmployees onUnauthorized={() => showLogin("관리자 세션이 만료되었거나 접근 권한이 없습니다.")} onLogout={logout} />;
 
   return (
-    <main><section className="card profile-card"><p className="eyebrow">내 정보</p><h1>{employee?.full_name}</h1><dl className="profile-details"><div><dt>사번</dt><dd>{employee?.employee_number}</dd></div><div><dt>생년월일</dt><dd>{employee?.date_of_birth}</dd></div><div><dt>이메일</dt><dd>{employee?.email}</dd></div></dl><form onSubmit={save}><label>전화번호<input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} /></label><label>주소<textarea value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} rows={3} /></label>{message && <p role="status" className="message">{message}</p>}<button type="submit" disabled={saving}>{saving ? "저장 중…" : "저장"}</button></form></section></main>
+    <main><section className="card profile-card"><header className="profile-header"><div><p className="eyebrow">내 정보</p><h1>{employee?.full_name}</h1></div><button type="button" className="button--secondary" onClick={() => void logout()}>로그아웃</button></header><dl className="profile-details"><div><dt>사번</dt><dd>{employee?.employee_number}</dd></div><div><dt>생년월일</dt><dd>{employee?.date_of_birth}</dd></div><div><dt>이메일</dt><dd>{employee?.email}</dd></div></dl><form onSubmit={save}><label>전화번호<input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} /></label><label>주소<textarea value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} rows={3} /></label>{message && <p role="status" className="message">{message}</p>}<button type="submit" disabled={saving}>{saving ? "저장 중…" : "저장"}</button></form></section></main>
   );
 }
 

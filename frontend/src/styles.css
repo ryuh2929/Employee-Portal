@@ -46,6 +46,8 @@ dd { margin: 0; overflow-wrap: anywhere; font-weight: 700; }
 .admin-main { place-items: start center; }
 .admin-card { width: min(1080px, 100%); }
 .admin-header, .admin-toolbar, .readonly-badges { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.profile-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.admin-actions { display: flex; gap: 10px; }
 .admin-header h1 { margin-bottom: 16px; }
 .admin-toolbar { margin: 18px 0; }
 .search-form { display: flex; flex: 1; max-width: 520px; }

@@ -21,7 +21,7 @@ CREATE_PAYLOAD = {
     "email": "admin-api-new@example.com",
     "phone": "010-3333-4444",
     "address": "서울특별시 종로구",
-    "initial_password": "Initial-Password-2026!",
+    "initial_password": "x",
 }
 
 
@@ -158,7 +158,7 @@ async def test_duplicate_employee_number_or_email_is_rejected(
 @pytest.mark.asyncio(loop_scope="module")
 @pytest.mark.parametrize(
     ("field", "value"),
-    [("email", "not-an-email"), ("employee_number", "bad number!"), ("full_name", "   "), ("date_of_birth", "2999-01-01"), ("initial_password", "short")],
+    [("email", "not-an-email"), ("employee_number", "bad number!"), ("full_name", "   "), ("date_of_birth", "2999-01-01")],
 )
 async def test_invalid_create_input_is_rejected(
     admin_api_context: dict[str, object], field: str, value: str

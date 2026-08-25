@@ -26,6 +26,23 @@ test("로그인한 직원은 자신의 정보를 확인한다", async () => {
   expect(screen.getByText("E0001")).toBeInTheDocument();
 });
 
+test("로그인한 직원은 로그아웃할 수 있다", async () => {
+  document.cookie = "employee_portal_csrf=test-csrf";
+  const fetchMock = vi.spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(new Response(JSON.stringify(employee), { status: 200 }))
+    .mockResolvedValueOnce(new Response(null, { status: 204 }));
+
+  render(<App />);
+  fireEvent.click(await screen.findByRole("button", { name: "로그아웃" }));
+
+  expect(await screen.findByRole("heading", { name: "로그인" })).toBeInTheDocument();
+  expect(fetchMock.mock.calls[1][0]).toBe(`${API_BASE_URL}/auth/logout`);
+  expect(fetchMock.mock.calls[1][1]).toEqual(expect.objectContaining({
+    method: "POST",
+    headers: { "X-CSRF-Token": "test-csrf" },
+  }));
+});
+
 test("전화번호와 주소를 수정한다", async () => {
   document.cookie = "employee_portal_csrf=test-csrf";
   const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(new Response(JSON.stringify(employee), { status: 200 })).mockResolvedValueOnce(new Response(JSON.stringify({ ...employee, phone: "010-9999-9999" }), { status: 200 }));

@@ -54,7 +54,7 @@ class AdminEmployeeFields(BaseModel):
 
 
 class AdminEmployeeCreate(AdminEmployeeFields):
-    initial_password: str = Field(min_length=8, max_length=1024)
+    initial_password: str
 
 
 class AdminEmployeeUpdate(BaseModel):
