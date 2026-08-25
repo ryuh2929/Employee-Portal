@@ -20,7 +20,7 @@ main {
   box-sizing: border-box;
 }
 
-.status-card {
+.card {
   width: min(640px, 100%);
   padding: 40px;
   border: 1px solid #dfe4ee;
@@ -28,6 +28,21 @@ main {
   background: white;
   box-shadow: 0 16px 48px rgb(23 32 51 / 8%);
 }
+
+.login-card { width: min(440px, 100%); }
+form { display: grid; gap: 18px; }
+label { display: grid; gap: 7px; font-size: .9rem; font-weight: 700; }
+button, input, textarea { font: inherit; }
+input, textarea { padding: 11px 12px; border: 1px solid #c9d0dd; border-radius: 8px; box-sizing: border-box; }
+button { padding: 12px 18px; border: 0; border-radius: 8px; color: white; background: #425bd7; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .6; }
+.profile-details { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 0 0 28px; }
+.profile-details div { padding: 14px; border-radius: 10px; background: #f4f6fa; }
+dt { margin-bottom: 5px; color: #697386; font-size: .78rem; }
+dd { margin: 0; overflow-wrap: anywhere; font-weight: 700; }
+.message { margin: 0; color: #0b6b43; }
+.message--error { color: #9c2f2f; }
+@media (max-width: 600px) { .card { padding: 28px 22px; } .profile-details { grid-template-columns: 1fr; } }
 
 .eyebrow {
   color: #425bd7;
