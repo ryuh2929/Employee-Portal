@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 from urllib.parse import quote_plus
 
 from pydantic import Field, SecretStr
@@ -30,6 +31,12 @@ class Settings(BaseSettings):
     seed_admin_password: SecretStr | None = None
     seed_employee_password: SecretStr | None = None
 
+    session_cookie_name: str = "employee_portal_session"
+    csrf_cookie_name: str = "employee_portal_csrf"
+    session_ttl_hours: int = Field(default=12, gt=0)
+    cookie_samesite: Literal["lax", "strict", "none"] = "lax"
+    cookie_secure: bool | None = None
+
     @property
     def database_url(self) -> str:
         user = quote_plus(self.postgres_user)
@@ -43,8 +50,15 @@ class Settings(BaseSettings):
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
 
+    @property
+    def use_secure_cookies(self) -> bool:
+        if self.cookie_samesite == "none":
+            return True
+        if self.cookie_secure is not None:
+            return self.cookie_secure
+        return self.app_env.lower() not in {"development", "test"}
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-

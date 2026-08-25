@@ -58,7 +58,13 @@ class Employee(TimestampMixin, Base):
     terminator: Mapped[Employee | None] = relationship(
         remote_side="Employee.id", foreign_keys=[terminated_by]
     )
+    sessions: Mapped[list[AuthSession]] = relationship(
+        back_populates="employee", cascade="all, delete-orphan"
+    )
 
     @validates("email")
     def normalize_email(self, _: str, value: str) -> str:
         return value.strip().lower()
+
+
+from app.models.session import AuthSession  # noqa: E402

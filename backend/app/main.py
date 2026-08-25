@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.routes.auth import router as auth_router
 from app.api.routes.health import router as health_router
 from app.core.config import get_settings
 from app.core.database import dispose_engine
@@ -30,4 +31,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(health_router)
-
+app.include_router(auth_router)

@@ -3,16 +3,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import date
 
-from pwdlib import PasswordHash
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.database import SessionFactory, dispose_engine
+from app.core.security import PASSWORD_HASH
 from app.models import Employee, EmployeeRole
-
-
-PASSWORD_HASH = PasswordHash.recommended()
 
 
 @dataclass(frozen=True)
