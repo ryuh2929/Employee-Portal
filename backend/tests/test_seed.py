@@ -1,8 +1,9 @@
 from collections.abc import Iterable
 from typing import Any
 
+from app.core.config import Settings
 from app.models import Employee, EmployeeRole
-from app.seed import PASSWORD_HASH, SEED_EMPLOYEES, seed_employees
+from app.seed import PASSWORD_HASH, SEED_EMPLOYEES, seed_employees, seed_is_allowed
 
 
 class ScalarResult:
@@ -31,6 +32,15 @@ class FakeSession:
 
     def add_all(self, employees: Iterable[Employee]) -> None:
         self.added.extend(employees)
+
+
+def test_seed_permission_defaults_and_explicit_production_opt_in() -> None:
+    common = {"_env_file": None, "postgres_password": "test-password"}
+
+    assert seed_is_allowed(Settings(app_env="development", **common))
+    assert not seed_is_allowed(Settings(app_env="production", **common))
+    assert seed_is_allowed(Settings(app_env="production", allow_seed=True, **common))
+    assert not seed_is_allowed(Settings(app_env="test", **common))
 
 
 async def test_seed_creates_admin_employees_and_argon2id_hashes() -> None:

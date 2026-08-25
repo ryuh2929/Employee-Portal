@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 
     seed_admin_password: SecretStr | None = None
     seed_employee_password: SecretStr | None = None
+    allow_seed: bool = False
 
     session_cookie_name: str = "employee_portal_session"
     csrf_cookie_name: str = "employee_portal_csrf"

@@ -6,7 +6,7 @@ from datetime import date
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.core.database import SessionFactory, dispose_engine
 from app.core.security import PASSWORD_HASH
 from app.models import Employee, EmployeeRole
@@ -116,10 +116,16 @@ async def seed_employees(
     return len(additions)
 
 
+def seed_is_allowed(settings: Settings) -> bool:
+    return settings.app_env.lower() == "development" or settings.allow_seed
+
+
 async def run_seed() -> int:
     settings = get_settings()
-    if settings.app_env.lower() != "development":
-        raise RuntimeError("Seed data can only be loaded in the development environment")
+    if not seed_is_allowed(settings):
+        raise RuntimeError(
+            "Seed data requires APP_ENV=development or explicit ALLOW_SEED=true"
+        )
     if settings.seed_admin_password is None or settings.seed_employee_password is None:
         raise RuntimeError(
             "SEED_ADMIN_PASSWORD and SEED_EMPLOYEE_PASSWORD must be configured"

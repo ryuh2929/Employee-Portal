@@ -23,6 +23,7 @@ Copy-Item .env.example .env
 | `APP_ENV`, `APP_HOST`, `APP_PORT` | 백엔드 실행 환경과 주소 |
 | `CORS_ORIGINS` | 허용할 프런트엔드 origin. 여러 값은 쉼표로 구분 |
 | `SEED_ADMIN_PASSWORD`, `SEED_EMPLOYEE_PASSWORD` | 개발 seed 계정 비밀번호 |
+| `ALLOW_SEED` | 개발 외 환경에서 seed를 명시적으로 허용. 기본값 `false` |
 | `BACKGROUND_CHECK_API_URL` | `swagger.yaml`의 외부 Background Check API base URL |
 | `BACKGROUND_CHECK_TIMEOUT_SECONDS` | 외부 API 요청 제한 시간(초) |
 | `VITE_API_BASE_URL` | 브라우저가 호출할 FastAPI 주소 |
@@ -65,6 +66,8 @@ python -m alembic upgrade head
 ## 개발 seed 데이터
 
 `.env`에서 `APP_ENV=development`와 두 `SEED_*_PASSWORD`를 설정한 뒤 실행합니다. 여러 번 실행해도 중복 생성되지 않습니다.
+
+Render 같은 production 환경에서 최초 계정이 필요하면 seed 실행 시에만 `ALLOW_SEED=true`를 명시적으로 설정합니다. 기본값 `false`에서는 production seed가 차단됩니다. 실행 후에는 다시 `false`로 변경합니다.
 
 ```powershell
 cd backend
