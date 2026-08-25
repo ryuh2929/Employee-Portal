@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 import AdminEmployees from "./AdminEmployees";
-import { api, csrfCookie } from "./api";
+import { api, clearCsrfToken, csrfToken, refreshCsrfToken } from "./api";
 import type { Employee } from "./api";
 
 type View = "loading" | "login" | "profile" | "admin";
@@ -21,6 +21,7 @@ function App() {
     setEmployee(profile); setPhone(profile.phone ?? ""); setAddress(profile.address ?? ""); setView(profile.role === "ADMIN" ? "admin" : "profile");
   };
   const showLogin = (notice = "") => {
+    clearCsrfToken();
     setEmployee(null); setPassword(""); setMessage(notice); setView("login");
   };
 
@@ -28,6 +29,7 @@ function App() {
     void api("/employees/me").then(async (response) => {
       if (response.status === 401) { showLogin(); return; }
       if (!response.ok) throw new Error();
+      await refreshCsrfToken();
       showProfile((await response.json()) as Employee);
     }).catch(() => showLogin("서버에 연결할 수 없습니다."));
   }, []);
@@ -41,6 +43,7 @@ function App() {
       const response = await api("/auth/login", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrf_token }, body: JSON.stringify({ email, password }) });
       if (response.status === 401) { setMessage("이메일 또는 비밀번호를 확인해 주세요."); return; }
       if (!response.ok) throw new Error();
+      await refreshCsrfToken();
       showProfile((await response.json()) as Employee);
     } catch { setMessage("로그인 요청을 처리하지 못했습니다."); }
   };
@@ -48,7 +51,7 @@ function App() {
   const save = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setMessage("");
     try {
-      const response = await api("/employees/me", { method: "PATCH", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfCookie() }, body: JSON.stringify({ phone: phone || null, address: address || null }) });
+      const response = await api("/employees/me", { method: "PATCH", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() }, body: JSON.stringify({ phone: phone || null, address: address || null }) });
       if (response.status === 401) { showLogin("세션이 만료되었습니다. 다시 로그인해 주세요."); return; }
       if (!response.ok) throw new Error();
       showProfile((await response.json()) as Employee); setMessage("정보가 저장되었습니다.");
@@ -61,7 +64,7 @@ function App() {
     try {
       const response = await api("/auth/logout", {
         method: "POST",
-        headers: { "X-CSRF-Token": csrfCookie() },
+        headers: { "X-CSRF-Token": csrfToken() },
       });
       if (response.ok || response.status === 401) { showLogin(); return; }
       throw new Error();

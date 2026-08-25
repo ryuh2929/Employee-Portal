@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-import { api, csrfCookie, errorMessage } from "./api";
+import { api, csrfToken, errorMessage } from "./api";
 import type { Employee } from "./api";
 import BackgroundHistory from "./BackgroundHistory";
 
@@ -75,7 +75,7 @@ export default function AdminEmployees({ onUnauthorized, onLogout }: { onUnautho
   const createEmployee = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault(); setMessage("");
     const payload = { ...employeePayload(event.currentTarget), initial_password: String(new FormData(event.currentTarget).get("initial_password") ?? "") };
-    const response = await api("/admin/employees", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfCookie() }, body: JSON.stringify(payload) });
+    const response = await api("/admin/employees", { method: "POST", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() }, body: JSON.stringify(payload) });
     if (!guard(response)) return;
     if (!response.ok) { setMessage(await errorMessage(response, "직원을 등록하지 못했습니다.")); return; }
     setMessage("직원이 등록되었습니다."); await loadEmployees(search);
@@ -85,7 +85,7 @@ export default function AdminEmployees({ onUnauthorized, onLogout }: { onUnautho
     event.preventDefault();
     if (!selected) return;
     setMessage("");
-    const response = await api(`/admin/employees/${selected.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfCookie() }, body: JSON.stringify(employeePayload(event.currentTarget)) });
+    const response = await api(`/admin/employees/${selected.id}`, { method: "PATCH", headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() }, body: JSON.stringify(employeePayload(event.currentTarget)) });
     if (!guard(response)) return;
     if (!response.ok) { setMessage(await errorMessage(response, "직원 정보를 수정하지 못했습니다.")); return; }
     setSelected((await response.json()) as Employee); setMessage("직원 정보가 저장되었습니다.");
@@ -96,7 +96,7 @@ export default function AdminEmployees({ onUnauthorized, onLogout }: { onUnautho
     if (!window.confirm(`${selected.full_name} 직원을 퇴사 처리하시겠습니까? 이 작업은 즉시 모든 세션을 종료합니다.`)) return;
     setMessage("");
     const response = await api(`/admin/employees/${selected.id}/terminate`, {
-      method: "POST", headers: { "X-CSRF-Token": csrfCookie() },
+      method: "POST", headers: { "X-CSRF-Token": csrfToken() },
     });
     if (!guard(response)) return;
     if (!response.ok) { setMessage("퇴사 처리를 완료하지 못했습니다."); return; }
@@ -126,7 +126,7 @@ export default function AdminEmployees({ onUnauthorized, onLogout }: { onUnautho
     };
     const response = await api(`/admin/employees/${selected.id}/background-checks`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfCookie() },
+      headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken() },
       body: JSON.stringify(payload),
     });
     if (!guard(response)) return;

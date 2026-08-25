@@ -192,7 +192,10 @@ async def test_logout_requires_csrf_and_revokes_existing_session(
     missing_csrf = await client.post("/auth/logout")
     assert missing_csrf.status_code == 403
 
-    csrf = client.cookies[settings.csrf_cookie_name]
+    csrf_response = await client.get("/auth/session-csrf")
+    assert csrf_response.status_code == 200
+    csrf = csrf_response.json()["csrf_token"]
+    assert client.cookies[settings.csrf_cookie_name] == csrf
     logout_response = await client.post(
         "/auth/logout", headers={"X-CSRF-Token": csrf}
     )
@@ -200,6 +203,27 @@ async def test_logout_requires_csrf_and_revokes_existing_session(
 
     client.cookies.set(settings.session_cookie_name, raw_session)
     assert (await client.get("/auth/me")).status_code == 401
+
+
+@pytest.mark.asyncio(loop_scope="module")
+async def test_session_csrf_rotates_token_for_authenticated_session(
+    client: httpx.AsyncClient,
+) -> None:
+    settings = get_settings()
+    assert (await login(client, TEST_EMAILS["employee"])).status_code == 200
+
+    response = await client.get("/auth/session-csrf")
+    assert response.status_code == 200
+    token = response.json()["csrf_token"]
+    assert token == client.cookies[settings.csrf_cookie_name]
+
+    raw_session = client.cookies[settings.session_cookie_name]
+    async with SessionFactory() as session:
+        stored = await session.scalar(
+            select(AuthSession).where(AuthSession.token_hash == hash_token(raw_session))
+        )
+    assert stored is not None
+    assert stored.csrf_token_hash == hash_token(token)
 
 
 @pytest.mark.asyncio(loop_scope="module")

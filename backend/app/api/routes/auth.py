@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import AuthContext, get_current_employee, require_csrf
+from app.api.dependencies import AuthContext, get_auth_context, get_current_employee, require_csrf
 from app.core.config import Settings, get_settings
 from app.core.database import get_db_session
 from app.core.security import DUMMY_PASSWORD_HASH, PASSWORD_HASH, generate_token, hash_token
@@ -46,6 +46,20 @@ def validate_double_submit_csrf(request: Request, settings: Settings) -> None:
 async def issue_csrf_token(response: Response) -> CsrfTokenResponse:
     settings = get_settings()
     token = generate_token()
+    set_csrf_cookie(response, token, settings)
+    return CsrfTokenResponse(csrf_token=token)
+
+
+@router.get("/session-csrf", response_model=CsrfTokenResponse)
+async def issue_session_csrf_token(
+    response: Response,
+    auth: AuthContext = Depends(get_auth_context),
+    db: AsyncSession = Depends(get_db_session),
+) -> CsrfTokenResponse:
+    settings = get_settings()
+    token = generate_token()
+    auth.session.csrf_token_hash = hash_token(token)
+    await db.commit()
     set_csrf_cookie(response, token, settings)
     return CsrfTokenResponse(csrf_token=token)
 

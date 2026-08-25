@@ -1,5 +1,5 @@
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-const CSRF_COOKIE_NAME = "employee_portal_csrf";
+let sessionCsrfToken = "";
 
 export type Employee = {
   id: string;
@@ -15,10 +15,21 @@ export type Employee = {
   terminated_by?: string | null;
 };
 
-export function csrfCookie(): string {
-  const prefix = `${CSRF_COOKIE_NAME}=`;
-  const cookie = document.cookie.split(";").map((value) => value.trim()).find((value) => value.startsWith(prefix));
-  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
+export function csrfToken(): string {
+  return sessionCsrfToken;
+}
+
+export function clearCsrfToken(): void {
+  sessionCsrfToken = "";
+}
+
+export async function refreshCsrfToken(): Promise<string> {
+  const response = await api("/auth/session-csrf");
+  if (!response.ok) throw new Error("Unable to issue session CSRF token");
+  const body = (await response.json()) as { csrf_token?: unknown };
+  if (typeof body.csrf_token !== "string" || !body.csrf_token) throw new Error("Invalid session CSRF token");
+  sessionCsrfToken = body.csrf_token;
+  return sessionCsrfToken;
 }
 
 export async function api(path: string, init: RequestInit = {}): Promise<Response> {
