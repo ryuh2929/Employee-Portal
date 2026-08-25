@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     cookie_samesite: Literal["lax", "strict", "none"] = "lax"
     cookie_secure: bool | None = None
 
+    background_check_api_url: str = "https://54capvm12g.execute-api.ap-northeast-2.amazonaws.com"
+    background_check_timeout_seconds: float = Field(default=10.0, gt=0)
+
     @property
     def database_url(self) -> str:
         user = quote_plus(self.postgres_user)

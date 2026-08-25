@@ -9,7 +9,7 @@ from sqlalchemy import delete, select
 
 from app.api.dependencies import require_admin, require_employee
 from app.core.config import Settings, get_settings
-from app.core.database import SessionFactory
+from app.core.database import SessionFactory, engine
 from app.core.security import PASSWORD_HASH, hash_token
 from app.main import app
 from app.models import AuthSession, Employee, EmployeeRole, EmployeeStatus
@@ -25,6 +25,7 @@ TEST_EMAILS = {
 
 @pytest_asyncio.fixture(scope="module", loop_scope="module")
 async def auth_employees() -> AsyncIterator[dict[str, Employee]]:
+    await engine.dispose(close=False)
     async with SessionFactory() as session:
         await session.execute(delete(Employee).where(Employee.email.in_(TEST_EMAILS.values())))
         password_hash = PASSWORD_HASH.hash(TEST_PASSWORD)

@@ -1,21 +1,11 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-const CSRF_COOKIE_NAME = "employee_portal_csrf";
+import AdminEmployees from "./AdminEmployees";
+import { api, csrfCookie } from "./api";
+import type { Employee } from "./api";
 
-type Employee = { id: string; employee_number: string; full_name: string; date_of_birth: string; email: string; phone: string | null; address: string | null; role: "EMPLOYEE" | "ADMIN"; status: "ACTIVE" | "TERMINATED" };
-type View = "loading" | "login" | "profile";
-
-function csrfCookie(): string {
-  const prefix = `${CSRF_COOKIE_NAME}=`;
-  const cookie = document.cookie.split(";").map((value) => value.trim()).find((value) => value.startsWith(prefix));
-  return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : "";
-}
-
-async function api(path: string, init: RequestInit = {}): Promise<Response> {
-  return fetch(`${API_BASE_URL}${path}`, { ...init, credentials: "include" });
-}
+type View = "loading" | "login" | "profile" | "admin";
 
 function App() {
   const [view, setView] = useState<View>("loading");
@@ -28,7 +18,7 @@ function App() {
   const [saving, setSaving] = useState(false);
 
   const showProfile = (profile: Employee) => {
-    setEmployee(profile); setPhone(profile.phone ?? ""); setAddress(profile.address ?? ""); setView("profile");
+    setEmployee(profile); setPhone(profile.phone ?? ""); setAddress(profile.address ?? ""); setView(profile.role === "ADMIN" ? "admin" : "profile");
   };
   const showLogin = (notice = "") => {
     setEmployee(null); setPassword(""); setMessage(notice); setView("login");
@@ -68,6 +58,7 @@ function App() {
 
   if (view === "loading") return <main><p role="status">로그인 상태를 확인하고 있습니다.</p></main>;
   if (view === "login") return <main><section className="card login-card"><p className="eyebrow">Employee Portal</p><h1>로그인</h1><form onSubmit={login}><label>이메일<input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><label>비밀번호<input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required /></label>{message && <p role="alert" className="message message--error">{message}</p>}<button type="submit">로그인</button></form></section></main>;
+  if (view === "admin") return <AdminEmployees onUnauthorized={() => showLogin("관리자 세션이 만료되었거나 접근 권한이 없습니다.")} />;
 
   return (
     <main><section className="card profile-card"><p className="eyebrow">내 정보</p><h1>{employee?.full_name}</h1><dl className="profile-details"><div><dt>사번</dt><dd>{employee?.employee_number}</dd></div><div><dt>생년월일</dt><dd>{employee?.date_of_birth}</dd></div><div><dt>이메일</dt><dd>{employee?.email}</dd></div></dl><form onSubmit={save}><label>전화번호<input value={phone} onChange={(e) => setPhone(e.target.value)} maxLength={30} /></label><label>주소<textarea value={address} onChange={(e) => setAddress(e.target.value)} maxLength={500} rows={3} /></label>{message && <p role="status" className="message">{message}</p>}<button type="submit" disabled={saving}>{saving ? "저장 중…" : "저장"}</button></form></section></main>
