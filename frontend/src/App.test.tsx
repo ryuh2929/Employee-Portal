@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, expect, test, vi } from "vitest";
 
 import App from "./App";
+import { API_BASE_URL } from "./api";
 
 afterEach(() => {
   cleanup();
@@ -76,7 +77,7 @@ test("관리자는 확인 후 직원을 퇴사 처리하고 상태를 확인한�
   expect(window.confirm).toHaveBeenCalled();
   expect(await screen.findByText("상태: TERMINATED")).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "퇴사 처리됨" })).toBeDisabled();
-  expect(fetchMock.mock.calls[4][0]).toBe("http://localhost:8000/admin/employees/id/terminate");
+  expect(fetchMock.mock.calls[4][0]).toBe(`${API_BASE_URL}/admin/employees/id/terminate`);
   expect(fetchMock.mock.calls[4][1]).toEqual(expect.objectContaining({ method: "POST", headers: { "X-CSRF-Token": "test-csrf" } }));
 });
 
@@ -100,6 +101,6 @@ test("관리자는 이름 제안을 수정해 Background Check를 요청한다",
   fireEvent.click(screen.getByRole("button", { name: "외부 검사 요청" }));
   expect(await screen.findByText("최초 상태: pending")).toBeInTheDocument();
   const request = fetchMock.mock.calls[5];
-  expect(request[0]).toBe("http://localhost:8000/admin/employees/id/background-checks");
+  expect(request[0]).toBe(`${API_BASE_URL}/admin/employees/id/background-checks`);
   expect(JSON.parse(String(request[1]?.body))).toEqual({ firstName: "수정이름", lastName: "수정성", dateOfBirth: "1991-01-02" });
 });

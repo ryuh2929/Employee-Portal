@@ -73,6 +73,15 @@ python -m app.seed
 
 관리자 1명과 일반 직원 3명이 생성되며 비밀번호는 Argon2id 해시로만 저장됩니다.
 
+Seed 로그인 계정:
+
+| 구분 | 이메일 | 비밀번호 |
+| --- | --- | --- |
+| 관리자 | `admin@employee-portal.local` | `.env`의 `SEED_ADMIN_PASSWORD` |
+| 일반 직원 | `minjun.park@employee-portal.local` | `.env`의 `SEED_EMPLOYEE_PASSWORD` |
+| 일반 직원 | `seoyeon.lee@employee-portal.local` | `.env`의 `SEED_EMPLOYEE_PASSWORD` |
+| 일반 직원 | `seojun.namgung@employee-portal.local` | `.env`의 `SEED_EMPLOYEE_PASSWORD` |
+
 ## 프런트엔드
 
 새 터미널에서 실행합니다.
